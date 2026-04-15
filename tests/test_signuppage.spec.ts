@@ -32,8 +32,9 @@ const invalidCredentials = [
 for (const { username, email, password, description } of invalidCredentials) {
     test(`sign up blocked with ${description}`, async ({ signUpPage }) => {
 
-        //invalid email test is expected to fail due to email validation not being implemented
-        test.fail(description === 'invalid email', 'email validation not implemented');
+        // for invalid credentials invalid email
+        // webkit passes natively due to built-in HTML5 email validation
+        // chromium and firefox do not validate - known app bug
         await signUpPage.usernameField.fill(username)
         await signUpPage.emailField.fill(email);
         await signUpPage.passwordField.fill(password);

@@ -35,20 +35,6 @@ test('Filter via Tags', async ({ homePage }) => {
   await expect(homePage.page).toHaveURL('https://demo.realworld.show');
 });
 
-test('Add to favourites', async({loggedInHomePage}) => {
-
-  await loggedInHomePage.firstHeartButton.waitFor({ state: 'visible' });
-  const favouritedNumber = parseInt(await loggedInHomePage.firstHeartButton.innerText(), 10);
-  await loggedInHomePage.favouriteitem();
-  await expect(loggedInHomePage.firstHeartButton).toHaveText(String(favouritedNumber + 1));
-})
-
-test('Add to favourites, without logged in', async ({ homePage }) => {
-
-  await homePage.favouriteitem()
-  await expect(homePage.page).toHaveURL('https://demo.realworld.show/register');
-});
-
 test('navigate to sing in page', async ({ homePage }) => {
 
   await expect(homePage.signInButton).toBeVisible();
@@ -63,4 +49,24 @@ test('navigate to sign up page', async ({ homePage }) => {
 
   await homePage.signUpButton.click();
   await expect(homePage.page).toHaveURL('https://demo.realworld.show/register');
+})
+
+test('Add to favourites, without logged in', async ({ homePage }) => {
+
+  await homePage.favouriteitem()
+  await expect(homePage.page).toHaveURL('https://demo.realworld.show/register');
+});
+
+test('logged in home page loads correctly', async({loggedInHomePage}) => {
+
+  await expect(loggedInHomePage.settingsButton).toBeVisible()
+  await expect(loggedInHomePage.newArticle).toBeVisible()
+})
+
+test('Add to favourites', async({loggedInHomePage}) => {
+
+  await loggedInHomePage.firstHeartButton.waitFor({ state: 'visible' });
+  const favouritedNumber = parseInt(await loggedInHomePage.firstHeartButton.innerText(), 10);
+  await loggedInHomePage.favouriteitem();
+  await expect(loggedInHomePage.firstHeartButton).toHaveText(String(favouritedNumber + 1));
 })

@@ -13,6 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  timeout: 120000,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -20,7 +21,10 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Limited to 1 worker due to shared demo server (demo.realworld.show)
+   being unable to handle concurrent registrations reliably.
+   Increase workers when pointing at a local/dedicated test environment. */
+  workers: process.env.CI ? 1 : 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -32,7 +36,7 @@ export default defineConfig({
     trace: 'on-first-retry',
 
     launchOptions: {
-      slowMo: 1500, // milliseconds between actions
+      //slowMo: 1500, // milliseconds between actions
     },
   },
 

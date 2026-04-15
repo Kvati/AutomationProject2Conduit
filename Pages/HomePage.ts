@@ -36,7 +36,7 @@ export class HomePage {
     this.firstTagList = page.locator('.tag-list').nth(0);
     this.openedTagTab = page.locator('.nav-link.active').nth(0);
     this.newArticle = page.getByRole('link', { name: `New Article` });
-    this.settingsButton = page.getByRole('button', { name: `Settings` });
+    this.settingsButton = page.getByRole('link', { name: `Settings` });
     this.userProfileButton = page.locator('a.nav-link:has(img.user-pic)')
   }
 
