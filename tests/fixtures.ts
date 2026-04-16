@@ -49,12 +49,13 @@ export const test = base.extend<Pages>({
     loggedInPage: async ({browser, randomUser}, use) => {
         const context = await browser.newContext();
         const page = await context.newPage();
-        await page.goto('https://demo.realworld.show/register');
+        await page.goto('https://demo.realworld.show/register', { waitUntil: 'domcontentloaded' });
+        await page.getByPlaceholder('Username').waitFor({ state: 'visible' });
         await page.getByPlaceholder('Username').fill(randomUser.username);
         await page.getByPlaceholder('Email').fill(randomUser.email);
         await page.getByPlaceholder('Password').fill(randomUser.password);
         await page.getByRole('button', {name: 'Sign up'}).click();
-        await page.waitForURL('https://demo.realworld.show/');
+        await page.waitForURL('https://demo.realworld.show/', { waitUntil: 'domcontentloaded' });
         await use(page);
         await context.close();
     },
@@ -111,12 +112,13 @@ export const test = base.extend<Pages>({
     registeredUser: async ({browser, randomUser}, use) => {
         const context = await browser.newContext();
         const page = await context.newPage();
-        await page.goto('https://demo.realworld.show/register');
+        await page.goto('https://demo.realworld.show/register', { waitUntil: 'domcontentloaded' });
+        await page.getByPlaceholder('Username').waitFor({ state: 'visible' });
         await page.getByPlaceholder('Username').fill(randomUser.username);
         await page.getByPlaceholder('Email').fill(randomUser.email);
         await page.getByPlaceholder('Password').fill(randomUser.password);
         await page.getByRole('button', {name: 'Sign up'}).click();
-        await page.waitForURL('https://demo.realworld.show/');
+        await page.waitForURL('https://demo.realworld.show/', { waitUntil: 'domcontentloaded' });
         await context.close();
         await use(randomUser);
     },

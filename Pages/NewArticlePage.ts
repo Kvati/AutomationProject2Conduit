@@ -1,5 +1,13 @@
 import {Page, Locator} from '@playwright/test';
 
+export interface ArticleData {
+    articleTitle: string;
+    articleDescription: string;
+    articleMainText: string;
+    articleTags1: string;
+    articleTags2: string;
+}
+
 export class NewArticlePage {
     readonly page: Page;
     readonly articleTitle: Locator;
@@ -19,6 +27,12 @@ export class NewArticlePage {
     readonly articleDate: Locator;
     readonly errorMessage: Locator;
     readonly tagTextContent: Locator;
+    readonly userProfile: Locator;
+    readonly myWrittenArticle: Locator;
+    readonly deleteCommentButton: Locator;
+    readonly newComment: Locator;
+    readonly profileErrorMessage: Locator;
+
 
 
     constructor(page: Page) {
@@ -40,11 +54,16 @@ export class NewArticlePage {
         this.articleDate = page.locator('.date').nth(0)
         this.errorMessage = page.locator('.error-messages li')
         this.tagTextContent = page.locator('.tag-default.tag-pill')
+        this.userProfile = page.locator(`a.nav-link[href*="/profile/"]`)
+        this.myWrittenArticle = page.locator('.article-preview')
+        this.newComment = page.locator('.card-block .card-text')
+        this.deleteCommentButton = page.locator('.mod-options .ion-trash-a')
+        this.profileErrorMessage = page.locator('.error-messages li')
     }
 
 
 
-    async fillArticle(articleTitle: string, articleDescription: string, articleMainText: string, articleTags1: string, articleTags2: string) : Promise<void> {
+    async fillArticle({ articleTitle, articleDescription, articleMainText, articleTags1, articleTags2 }: ArticleData) : Promise<void> {
 
         await this.articleTitle.fill(articleTitle);
         await this.articleDescription.fill(articleDescription);
@@ -72,10 +91,10 @@ export class NewArticlePage {
         await this.articlePublishButton.click();
     }
 
-    async editArticle(articleTitle: string, articleDescription: string, articleMainText: string, articleTags1: string, articleTags2: string) : Promise<void> {
+    async editArticle(data: ArticleData) : Promise<void> {
 
         await this.editArticleButton.click();
-        await this.fillArticle(articleTitle, articleDescription, articleMainText, articleTags1, articleTags2);
+        await this.fillArticle(data);
     }
 
     async writeComment(comment: string) : Promise<void> {

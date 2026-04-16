@@ -1,9 +1,10 @@
 import { test, expect } from './fixtures';
+import { defaultArticle } from './testData';
 
-/*
+
 test('new article page loads successfuly', async ({loggedInNewArticlePage}) => {
 
-    const {page, user} = loggedInNewArticlePage;
+    const {page} = loggedInNewArticlePage;
     await expect(page.page).toHaveURL('https://demo.realworld.show/editor');
     await expect(page.articleTitle).toBeVisible()
     await expect(page.articleDescription).toBeVisible()
@@ -15,7 +16,7 @@ test('new article page loads successfuly', async ({loggedInNewArticlePage}) => {
 test('fill article with valid info', async ({loggedInNewArticlePage}) => {
 
     const {page, user} = loggedInNewArticlePage;
-    await page.fillArticle('articleTitle', 'articleDescription', 'articleMainText', 'articleTags1', 'articleTags2')
+    await page.fillArticle(defaultArticle)
     const expectedDate = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date());
 
     await expect(page.page).toHaveURL('https://demo.realworld.show/article/articletitle');
@@ -42,8 +43,8 @@ const inputs = [
 for (const input of inputs) {
     test(`fill article with empty values - ${input.description}`, async ({loggedInNewArticlePage}) => {
 
-        const {page, user} = loggedInNewArticlePage;
-        await page.fillArticle(input.articleTitle, input.articleDescription, input.articleMainText, input.articleTags1, input.articleTags2);
+        const {page} = loggedInNewArticlePage;
+        await page.fillArticle(input);
 
         if (Array.isArray(input.expectedError)) {
             for (const [index, error] of input.expectedError.entries()) {
@@ -67,16 +68,16 @@ const limitInputs = [
 
 test('fill article with limit values - tag over limit (20 chars)', async ({loggedInNewArticlePage}) => {
     test.fail();
-    const {page, user} = loggedInNewArticlePage;
-    await page.fillArticle('articleTitle', 'articleDescription', 'articleMainText', 'articleTags1', 'a'.repeat(20));
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle({ ...defaultArticle, articleTags2: 'a'.repeat(20) });
     await expect(page.errorMessage.nth(0)).toHaveText('body tagList is an optional list of less than 10 strings of less than 20 chars');
 });
 
 for (const input of limitInputs) {
     test(`fill article with limit values - ${input.description}`, async ({loggedInNewArticlePage}) => {
 
-        const {page, user} = loggedInNewArticlePage;
-        await page.fillArticle(input.articleTitle, input.articleDescription, input.articleMainText, input.articleTags1, input.articleTags2);
+        const {page} = loggedInNewArticlePage;
+        await page.fillArticle(input);
 
         if (input.expectedError === null) {
             await expect(page.page).toHaveURL(/article/);
@@ -94,7 +95,7 @@ const tagInputLimits = [
 for (const input of tagInputLimits) {
     test(`fill article with ${input.tagLimit} tags`, async ({loggedInNewArticlePage}) => {
 
-        const {page, user} = loggedInNewArticlePage;
+        const {page} = loggedInNewArticlePage;
         await page.fillArticleCustomTags('articleTitle', 'articleDescription','articleMainText', 'articleTag', input.tagLimit)
 
         if (input.tagLimit <= 10) {
@@ -108,16 +109,16 @@ for (const input of tagInputLimits) {
 
 test('duplicate tag', async ({loggedInNewArticlePage}) => {
 
-    const {page, user} = loggedInNewArticlePage;
-    await page.fillArticle('articleTitle', 'articleDescription', 'articleMainText', 'articleTags1', 'articleTags1')
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle({ ...defaultArticle, articleTags2: 'articleTags1' })
 
     expect(await page.createdArticleTags.count()).toEqual(1);
 })
 
 test('edit article', async ({loggedInNewArticlePage}) => {
 
-    const {page, user} = loggedInNewArticlePage;
-    await page.fillArticle('articleTitle', 'articleDescription', 'articleMainText', 'articleTags1', 'articleTags2')
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle(defaultArticle)
 
     await page.editArticleButton.click();
     await expect(page.articleTitle).toHaveValue('articleTitle');
@@ -125,20 +126,63 @@ test('edit article', async ({loggedInNewArticlePage}) => {
     await expect(page.articleMainText).toHaveValue('articleMainText');
     expect((await page.tagTextContent.textContent())!.trim()).toEqual('articleTags2');
 
-    await page.fillArticle('newArticleTitle', 'newArticleDescription', 'newArticleMainText', '', 'newArticleTags2')
+    await page.fillArticle({ articleTitle: 'newArticleTitle', articleDescription: 'newArticleDescription', articleMainText: 'newArticleMainText', articleTags1: '', articleTags2: 'newArticleTags2' })
     await expect(page.createdArticleTitle).toHaveText('newArticleTitle');
     await expect(page.createdArticleMainText).toHaveText('newArticleMainText');
     await expect(page.createdArticleTags).toHaveText('newArticleTags2');
 })
 
-*/
+
 test('session timeout', async ({loggedInNewArticlePage}) => {
 
-    const {page, user} = loggedInNewArticlePage
+    const {page} = loggedInNewArticlePage
 
     await page.page.route('https://api.realworld.show/api/articles/', async route => {
         await route.continue({headers: {...route.request().headers(), 'authorization': 'Token expired-token'}});});
 
-    await page.fillArticle('articleTitle', 'articleDescription', 'articleMainText', 'articleTags1', 'articleTags2')
+    await page.fillArticle(defaultArticle)
     await expect(page.errorMessage.nth(0)).toHaveText('token is missing')
+})
+
+
+test('delete article', async ({loggedInNewArticlePage}) => {
+
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle(defaultArticle)
+
+    await page.deleteArticle()
+    await expect(page.page).toHaveURL('https://demo.realworld.show');
+})
+
+test('post a comment', async ({loggedInNewArticlePage}) => {
+
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle(defaultArticle)
+
+    await page.commentBox.fill('random comment')
+    await page.postCommentButton.click();
+    await expect(page.newComment).toBeVisible()
+    await expect(page.newComment).toHaveText('random comment')
+})
+
+test('delete a comment', async ({loggedInNewArticlePage}) => {
+
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle(defaultArticle)
+
+    await page.commentBox.fill('random comment')
+    await page.postCommentButton.click();
+
+    await page.deleteCommentButton.click();
+    await expect(page.newComment).not.toBeVisible()
+})
+
+test('post empty comment', async ({loggedInNewArticlePage}) => {
+
+    const {page} = loggedInNewArticlePage;
+    await page.fillArticle(defaultArticle)
+
+    await page.postCommentButton.click();
+    await expect(page.profileErrorMessage). toBeVisible()
+    await expect(page.profileErrorMessage).toHaveText("body can't be blank")
 })

@@ -70,3 +70,12 @@ test('Add to favourites', async({loggedInHomePage}) => {
   await loggedInHomePage.favouriteitem();
   await expect(loggedInHomePage.firstHeartButton).toHaveText(String(favouritedNumber + 1));
 })
+
+test('unfavourite article', async ({loggedInHomePage}) => {
+
+  await loggedInHomePage.firstHeartButton.waitFor({ state: 'visible' })
+  const initialCount = parseInt(await loggedInHomePage.firstHeartButton.innerText(), 10)
+  await loggedInHomePage.favouriteitem()
+  await loggedInHomePage.favouriteitem()
+  await expect(loggedInHomePage.firstHeartButton).toHaveText(String(initialCount))
+})

@@ -32,15 +32,30 @@ const invalidCredentials = [
 for (const { username, email, password, description } of invalidCredentials) {
     test(`sign up blocked with ${description}`, async ({ signUpPage }) => {
 
-        // for invalid credentials invalid email
-        // webkit passes natively due to built-in HTML5 email validation
-        // chromium and firefox do not validate - known app bug
+        if (description === 'invalid email') {
+            test.fail(true, 'Known app bug: no email validation in any browser');
+        }
+
         await signUpPage.usernameField.fill(username)
         await signUpPage.emailField.fill(email);
         await signUpPage.passwordField.fill(password);
         await expect(signUpPage.signUpButton).toBeDisabled();
     });
 }
+
+test('sign up with duplicate username', async ({registeredUser, signUpPage}) => {
+    test.fail(true, 'Known app bug: no duplicate username validation')
+
+    await signUpPage.signup(registeredUser.username, 'unique@email.com', 'Test1234!')
+    await expect(signUpPage.invalidCredentials).toContainText('username has already been taken')
+})
+
+test('sign up with duplicate email', async ({registeredUser, signUpPage}) => {
+    test.fail(true, 'Known app bug: no duplicate email validation')
+
+    await signUpPage.signup('uniqueUsername', registeredUser.email, 'Test1234!')
+    await expect(signUpPage.invalidCredentials).toContainText('email has already been taken')
+})
 
 test('have an account navigation', async({signUpPage}) => {
 

@@ -1,5 +1,13 @@
 import { test, expect } from './fixtures';
 
+test('logout', async ({loggedInSettingsPage}) => {
+
+    const {page} = loggedInSettingsPage
+    await page.logout()
+    await expect(page.page).toHaveURL('https://demo.realworld.show')
+    await expect(page.page.getByRole('link', { name: 'Sign in' })).toBeVisible()
+})
+
 test('settings page loads successfully', async ({loggedInSettingsPage}) => {
 
     const {page, user} = loggedInSettingsPage

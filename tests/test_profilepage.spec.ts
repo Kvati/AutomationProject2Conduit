@@ -1,4 +1,6 @@
 import { test, expect } from './fixtures';
+import {defaultArticle} from "./testData";
+
 
 test.describe.configure({ mode: 'serial' });
 
@@ -37,4 +39,29 @@ test('my posts navigation', async ({profilePage}) => {
     await page.openFavoritePosts()
     await page.openMyPosts()
     await expect(page.page).toHaveURL(`https://demo.realworld.show/profile/${user.username}`)
+})
+
+test('deleted article removed from profile', async ({loggedInNewArticlePage}) => {
+
+    const {page, user} = loggedInNewArticlePage
+    await page.fillArticle(defaultArticle)
+    await expect(page.page).toHaveURL('https://demo.realworld.show/article/articletitle')
+
+    await page.deleteArticle()
+
+    await page.page.goto(`https://demo.realworld.show/profile/${user.username}`)
+    await expect(page.myWrittenArticle).not.toBeVisible()
+})
+
+test('new article in my posts', async ({loggedInNewArticlePage}) => {
+
+    const {page, user} = loggedInNewArticlePage;
+    await page.fillArticle(defaultArticle)
+    await expect(page.page).toHaveURL('https://demo.realworld.show/article/articletitle')
+
+    await page.page.goto(`https://demo.realworld.show/profile/${user.username}`)
+    await expect(page.page).toHaveURL(`https://demo.realworld.show/profile/${user.username}`)
+
+    await expect(page.myWrittenArticle).toBeVisible()
+    await expect(page.page.locator('.preview-link h1')).toHaveText(defaultArticle.articleTitle)
 })
