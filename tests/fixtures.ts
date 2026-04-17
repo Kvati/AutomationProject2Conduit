@@ -5,6 +5,7 @@ import {SignUpPage} from "../Pages/SignUpPage";
 import {ProfilePage} from "../Pages/ProfilePage";
 import {SettingsPage} from "../Pages/SettingsPage";
 import {NewArticlePage} from "../Pages/NewArticlePage";
+import { registerViaApi } from './helpers';
 
 type User = {
     username: string,
@@ -47,15 +48,22 @@ export const test = base.extend<Pages>({
     },
 
     loggedInPage: async ({browser, randomUser}, use) => {
-        const context = await browser.newContext();
+        // Register via API and get the JWT token — no browser needed for this step
+        const token = await registerViaApi(randomUser);
+
+        // Preload the token into localStorage so the app boots up authenticated.
+        // storageState lets us seed browser storage before any page is visited.
+        const context = await browser.newContext({
+            storageState: {
+                cookies: [],
+                origins: [{
+                    origin: 'https://demo.realworld.show',
+                    localStorage: [{ name: 'jwtToken', value: token }]
+                }]
+            }
+        });
         const page = await context.newPage();
-        await page.goto('https://demo.realworld.show/register', { waitUntil: 'domcontentloaded' });
-        await page.getByPlaceholder('Username').waitFor({ state: 'visible' });
-        await page.getByPlaceholder('Username').fill(randomUser.username);
-        await page.getByPlaceholder('Email').fill(randomUser.email);
-        await page.getByPlaceholder('Password').fill(randomUser.password);
-        await page.getByRole('button', {name: 'Sign up'}).click();
-        await page.waitForURL('https://demo.realworld.show/', { waitUntil: 'domcontentloaded' });
+        await page.goto('https://demo.realworld.show', { waitUntil: 'domcontentloaded' });
         await use(page);
         await context.close();
     },
@@ -86,14 +94,12 @@ export const test = base.extend<Pages>({
     },
 
     loggedInSettingsPage: async ({loggedInPage, randomUser}, use) => {
-
         const settingsPage = new SettingsPage(loggedInPage)
         await settingsPage.page.goto('https://demo.realworld.show/settings')
         await use({page: settingsPage, user: randomUser});
     },
 
     loggedInNewArticlePage: async ({loggedInPage, randomUser}, use) => {
-
         const newArticlePage = new NewArticlePage(loggedInPage)
         await newArticlePage.page.goto('https://demo.realworld.show/editor')
         await use({page: newArticlePage, user: randomUser});
@@ -108,18 +114,11 @@ export const test = base.extend<Pages>({
         });
     },
 
-
-    registeredUser: async ({browser, randomUser}, use) => {
-        const context = await browser.newContext();
-        const page = await context.newPage();
-        await page.goto('https://demo.realworld.show/register', { waitUntil: 'domcontentloaded' });
-        await page.getByPlaceholder('Username').waitFor({ state: 'visible' });
-        await page.getByPlaceholder('Username').fill(randomUser.username);
-        await page.getByPlaceholder('Email').fill(randomUser.email);
-        await page.getByPlaceholder('Password').fill(randomUser.password);
-        await page.getByRole('button', {name: 'Sign up'}).click();
-        await page.waitForURL('https://demo.realworld.show/', { waitUntil: 'domcontentloaded' });
-        await context.close();
+    registeredUser: async ({randomUser}, use) => {
+        // Only needs the user to exist in the database — no browser required at all.
+        // The API call registers the user, and we discard the token since tests
+        // that use registeredUser supply their own credentials to the login form.
+        await registerViaApi(randomUser);
         await use(randomUser);
     },
 

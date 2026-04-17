@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures';
-import {defaultArticle} from "./testData";
+import { test, expect } from '../fixtures';
+import {defaultArticle} from "../testData";
 
 
 test.describe.configure({ mode: 'serial' });
