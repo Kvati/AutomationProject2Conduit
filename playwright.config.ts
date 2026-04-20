@@ -43,17 +43,31 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'api',
+      testMatch: 'tests/api/**/*.spec.ts',
+    },
+
+    {
+      name: 'e2e',
+      testMatch: 'tests/E2E/**/*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    {
       name: 'chromium',
+      testMatch: 'tests/ui/**/*.spec.ts',
       use: { ...devices['Desktop Chrome'] },
     },
 
     {
       name: 'firefox',
+      testMatch: 'tests/ui/**/*.spec.ts',
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
       name: 'webkit',
+      testMatch: 'tests/ui/**/*.spec.ts',
       use: { ...devices['Desktop Safari'] },
     },
 

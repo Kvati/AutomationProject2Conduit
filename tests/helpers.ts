@@ -20,3 +20,33 @@ export async function registerViaApi(user: User): Promise<string> {
     await apiContext.dispose();
     return body.user.token;
 }
+
+
+type Article = {
+    title: string;
+    description: string;
+    body: string;
+    tagList: string[];
+};
+
+export async function createArticleViaApi(article: Article, token: string): Promise<string> {
+    const apiContext = await request.newContext();
+    const response = await apiContext.post(`${BASE_URL}/articles`, {
+        headers: { Authorization: `Token ${token}` },
+        data: { article }
+    });
+    const body = await response.json();
+    await apiContext.dispose();
+    return body.article.slug;
+}
+
+export async function createCommentViaApi(slug: string, commentBody: string, token: string): Promise<number> {
+    const apiContext = await request.newContext();
+    const response = await apiContext.post(`${BASE_URL}/articles/${slug}/comments`, {
+        headers: { Authorization: `Token ${token}` },
+        data: { comment: { body: commentBody } }
+    });
+    const body = await response.json();
+    await apiContext.dispose();
+    return body.comment.id;
+}
